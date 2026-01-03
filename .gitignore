@@ -1,0 +1,13 @@
+# Python
+__pycache__/
+*.pyc
+.venv/
+
+# OS/editor
+.DS_Store
+.idea/
+.vscode/
+
+# Obsidian local stuff
+docs/.obsidian/workspace*
+docs/.obsidian/cache/
