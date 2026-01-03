@@ -10,3 +10,4 @@ Start here: \`docs/00_Index.md\`
 - Log watcher that detects crashes/warnings and writes incident notes to \`docs/05_Postmortems/\`
 - Backup runner + verification
 - Simple CLI: \`python -m agent ...\`
+# ai--server-agent
