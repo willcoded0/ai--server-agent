@@ -1,0 +1,14 @@
+printf "%s\n" \
+"vault_docs_dir: docs" \
+"postmortems_dir: docs/05_Postmortems" \
+"log_file: /home/teao/Downloads/cobblemon/logs/latest.log" \
+"tail_lines: 200" \
+"patterns:" \
+"  - name: Crash" \
+"    match: \"\\[Server thread/ERROR\\]\" " \
+"  - name: Watchdog" \
+"    match: \"Watchdog\" " \
+"  - name: OutOfMemory" \
+"    match: \"OutOfMemoryError\" " \
+> agent/config.example.yaml
+

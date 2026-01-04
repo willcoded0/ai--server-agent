@@ -10,6 +10,19 @@ from typing import Iterable
 import sys
 
 import yaml
+import subprocess
+
+
+def tail_remote_lines(user: str, host: str, path: str, n: int) -> tuple[list[str], str | None]:
+    """Fetch last n lines from remote log via SSH.
+
+    Returns (lines, error_message). If error_message is not None, SSH failed.
+    """
+    cmd = ["ssh", f"{user}@{host}", f"tail -n {n} {path}"]
+    result = subprocess.run(cmd, capture_output=True, text=True)
+    if result.returncode != 0:
+        return [], result.stderr.strip() or f"SSH exited with code {result.returncode}"
+    return result.stdout.splitlines(), None
 
 
 @dataclass(frozen=True)
@@ -91,15 +104,30 @@ def main() -> int:
         return 2
 
     cfg = load_config(cfg_path)
-    log_path = Path(cfg.get("log_file", ""))
+
+    # Validate remote section
+    remote = cfg.get("remote")
+    if not remote:
+        print("Config error: missing 'remote' section")
+        return 2
+    user = remote.get("user")
+    host = remote.get("host")
+    log_file = remote.get("log_file")
+    if not all([user, host, log_file]):
+        print("Config error: 'remote' must have 'user', 'host', and 'log_file'")
+        return 2
+
     tail_n = int(cfg.get("tail_lines", 200))
     postmortems_dir = Path(cfg.get("postmortems_dir", "docs/05_Postmortems"))
-
     patterns = [Pattern(**p) for p in (cfg.get("patterns") or [])]
 
-    lines = tail_last_lines(log_path, tail_n)
+    # Fetch logs via SSH
+    lines, ssh_error = tail_remote_lines(user, host, log_file, tail_n)
+    if ssh_error:
+        print(f"SSH failed: {ssh_error}")
+        return 1
     if not lines:
-        print(f"No log lines read from: {log_path}")
+        print(f"No log lines read from {user}@{host}:{log_file}")
         return 1
 
     hits = find_matches(lines, patterns)
@@ -108,6 +136,7 @@ def main() -> int:
         return 0
 
     title = hits[0][0].name
+    log_path = Path(log_file)
     out = write_incident(postmortems_dir, title, log_path, lines, hits[:10])
     print(f"Wrote incident note: {out}")
     return 0

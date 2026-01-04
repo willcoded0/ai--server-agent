@@ -1,7 +1,13 @@
 vault_docs_dir: docs
 postmortems_dir: docs/05_Postmortems
-log_file: /home/teao/Downloads/cobblemon/logs/latest.log
+
+remote:
+  user: teao
+  host: 192.168.1.79
+  log_file: /home/teao/Downloads/cobblemon/logs/latest.log
+
 tail_lines: 200
+
 patterns:
   - name: Crash
     match: "\\[Server thread/ERROR\\]"
@@ -9,3 +15,4 @@ patterns:
     match: "Watchdog"
   - name: OutOfMemory
     match: "OutOfMemoryError"
+
